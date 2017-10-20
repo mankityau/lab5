@@ -52,7 +52,7 @@ void service(MusicLibrary &lib, std::mutex &libMutex, MusicLibraryApi &&api, int
                 // add song to library
                 bool success = false;
                 {
-                    std::lock_guard(libMutex);
+                    std::lock_guard<std::mutex> libLock(libMutex);
                     success = lib.add(add.song);
                 }
 
@@ -72,7 +72,7 @@ void service(MusicLibrary &lib, std::mutex &libMutex, MusicLibraryApi &&api, int
 
                 bool success = false;
                 {
-                    std::lock_guard(libMutex);
+                    std::lock_guard<std::mutex> libLock(libMutex);
                     success = lib.remove(remove.song);
                 }
 
@@ -96,7 +96,7 @@ void service(MusicLibrary &lib, std::mutex &libMutex, MusicLibraryApi &&api, int
                 std::vector<Song> results;
 
                 {
-                    std::lock_guard(libMutex);
+                    std::lock_guard<std::mutex> libLock(libMutex);
                     results = lib.find(search.artist_regex, search.title_regex);
 
                     // send response
