@@ -114,12 +114,24 @@ private:
 
         char cbuff[256];
 
+        int remainingSize = size;
+        while (remainingSize > 0) {
+            int readingSize = remainingSize >= 256 ? 256 : remainingSize;
+            if (!socket_.read(cbuff, readingSize)){
+                return false;
+            }
+
+            for (int i = 0; i < readingSize; i ++){
+                str += cbuff[i];
+            }
+            remainingSize -= 256;
+        }
+
         //======================================================
         // TODO: read and append to str in chunks of 256 bytes
         //======================================================
-        bool success = false;
 
-        return success;
+        return true;
     }
 
     /**
@@ -142,6 +154,10 @@ private:
         // TODO: Decode 4-byte big-endian integer size
         //=================================================
         int size = 0;
+        for (int i = 0; i < 4; ++ i) {
+            size_t charValue = (size_t) buff[i] & 0xFF;
+            size += charValue * std::pow(32, 3 - i);
+        }
 
         // read entire JSON string
         std::string str;

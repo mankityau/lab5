@@ -109,19 +109,19 @@ public:
         return j;
     }
 
-    static JSON toJson(const RemoveMessage &remove) {
+    static JSON toJSON(const RemoveMessage &remove) {
         JSON j;
         j[MESSAGE_TYPE] = MESSAGE_REMOVE;
-        j[MESSAGE_SONG] = toJson(remove.song);
+        j[MESSAGE_SONG] = toJSON(remove.song);
         return j;
     }
 
-    static JSON toJson(const RemoveResponseMessage &remove_response) {
+    static JSON toJSON(const RemoveResponseMessage &remove_response) {
         JSON j;
         j[MESSAGE_TYPE] = MESSAGE_REMOVE_RESPONSE;
         j[MESSAGE_STATUS] = remove_response.status;
         j[MESSAGE_INFO] = remove_response.info;
-        j[MESSAGE_REMOVE] = toJson(remove_response.remove);
+        j[MESSAGE_REMOVE] = toJSON(remove_response.remove);
         return j;
     }
 
@@ -329,7 +329,6 @@ public:
      * @return parsed Message object, or nullptr if invalid
      */
     static std::unique_ptr<Message> parseMessage(const JSON &jmsg) {
-
         MessageType type = parseType(jmsg);
         switch (type) {
             case ADD: {
