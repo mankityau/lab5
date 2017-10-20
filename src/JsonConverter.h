@@ -109,9 +109,21 @@ public:
         return j;
     }
 
-    //======================================================
-    // TODO: Convert "remove" and response message to JSON
-    //======================================================
+    static JSON toJson(const RemoveMessage &remove) {
+        JSON j;
+        j[MESSAGE_TYPE] = MESSAGE_REMOVE;
+        j[MESSAGE_SONG] = toJson(remove.song);
+        return j;
+    }
+
+    static JSON toJson(const RemoveResponseMessage &remove_response) {
+        JSON j;
+        j[MESSAGE_TYPE] = MESSAGE_REMOVE_RESPONSE;
+        j[MESSAGE_STATUS] = remove_response.status;
+        j[MESSAGE_INFO] = remove_response.info;
+        j[MESSAGE_REMOVE] = toJson(remove_response.remove);
+        return j;
+    }
 
     /**
      * Converts a "search" message to a JSON object
@@ -158,17 +170,18 @@ public:
      * @return JSON object representation, {"status"="ERROR", "info"=...} if not recognized
      */
     static JSON toJSON(const Message &msg) {
-
-        //=============================================================
-        // TODO: Convert "remove" and its response to JSON
-        //=============================================================
-
         switch (msg.type()) {
             case ADD: {
                 return toJSON((AddMessage &) msg);
             }
             case ADD_RESPONSE: {
                 return toJSON((AddResponseMessage &) msg);
+            }
+            case REMOVE: {
+                return toJSON((RemoveMessage &) msg);
+            }
+            case REMOVE_RESPONSE: {
+                return toJSON((RemoveResponseMessage &) msg);
             }
             case SEARCH: {
                 return toJSON((SearchMessage &) msg);
@@ -238,9 +251,17 @@ public:
         return AddResponseMessage(add, status, info);
     }
 
-    //======================================================
-    // TODO: Parse "remove" and response message from JSON
-    //======================================================
+    static RemoveMessage parseRemove(const JSON &jremove) {
+        Song song = parseSong(jremove[MESSAGE_SONG]);
+        return RemoveMessage(song);
+    }
+
+    static RemoveResponseMessage parseRemoveResponse(const JSON &jremove) {
+        RemoveMessage remove = parseRemove(jremove[MESSAGE_REMOVE]);
+        std::string status = jremove[MESSAGE_STATUS];
+        std::string info = jremove[MESSAGE_INFO];
+        return RemoveResponseMessage(remove, status, info);
+    }
 
     /**
      * Converts a JSON object representing a SearchMessage to a SearchMessage object
@@ -309,10 +330,6 @@ public:
      */
     static std::unique_ptr<Message> parseMessage(const JSON &jmsg) {
 
-        //=============================================================
-        // TODO: Add parsing of "remove" and its response
-        //=============================================================
-
         MessageType type = parseType(jmsg);
         switch (type) {
             case ADD: {
@@ -320,6 +337,12 @@ public:
             }
             case ADD_RESPONSE: {
                 return std::unique_ptr<Message>(new AddResponseMessage(parseAddResponse(jmsg)));
+            }
+            case REMOVE: {
+                return std::unique_ptr<Message>(new RemoveMessage(parseRemove(jmsg)));
+            }
+            case REMOVE_RESPONSE: {
+                return std::unique_ptr<Message>(new RemoveResponseMessage(parseRemoveResponse(jmsg)));
             }
             case SEARCH: {
                 return std::unique_ptr<Message>(new SearchMessage(parseSearch(jmsg)));
