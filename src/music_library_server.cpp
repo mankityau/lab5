@@ -151,23 +151,15 @@ int main() {
     server.open();
     std::cout << "Server started on port " << server.port() << std::endl;
 
-    //===============================================================
-    // TODO: Modify to allow multiple client-server connections
-    //     Loop:
-    //       - 'Accept' a socket client
-    //       - Create an API wrapper around the socket
-    //       - Send the API wrapper to the service(...) function
-    //         to run in a new detached thread
-    //===============================================================
     cpen333::process::socket client;
-    if (server.accept(client)) {
+    int clientCount = 0;
+    while (server.accept(client)) {
         // create API handler
         JsonMusicLibraryApi api(std::move(client));
-        // service client-server communication
-        service(lib, std::move(api), 0);
+        std::thread thread(service, std::ref(lib), std::move(api), clientCount);
+        thread.detach();
+        ++ clientCount;
     }
-
-    // close server
     server.close();
 
     return 0;
