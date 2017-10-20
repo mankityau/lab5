@@ -26,7 +26,7 @@
  * @param api communication interface layer
  * @param id client id for printing messages to the console
  */
-void service(MusicLibrary &lib, MusicLibraryApi &&api, int id) {
+void service(MusicLibrary &lib, std::mutex &libMutex, MusicLibraryApi &&api, int id) {
 
     //=========================================================
     // TODO: Implement thread safety
@@ -51,7 +51,10 @@ void service(MusicLibrary &lib, MusicLibraryApi &&api, int id) {
 
                 // add song to library
                 bool success = false;
-                success = lib.add(add.song);
+                {
+                    std::lock_guard(libMutex);
+                    success = lib.add(add.song);
+                }
 
                 // send response
                 if (success) {
@@ -68,7 +71,10 @@ void service(MusicLibrary &lib, MusicLibraryApi &&api, int id) {
                 std::cout << "Client " << id << " removing song: " << remove.song << std::endl;
 
                 bool success = false;
-                success = lib.remove(remove.song);
+                {
+                    std::lock_guard(libMutex);
+                    success = lib.remove(remove.song);
+                }
 
                 if (success) {
                     api.sendMessage(RemoveResponseMessage(remove, MESSAGE_STATUS_OK));
@@ -88,10 +94,14 @@ void service(MusicLibrary &lib, MusicLibraryApi &&api, int id) {
 
                 // search library
                 std::vector<Song> results;
-                results = lib.find(search.artist_regex, search.title_regex);
 
-                // send response
-                api.sendMessage(SearchResponseMessage(search, results, MESSAGE_STATUS_OK));
+                {
+                    std::lock_guard(libMutex);
+                    results = lib.find(search.artist_regex, search.title_regex);
+
+                    // send response
+                    api.sendMessage(SearchResponseMessage(search, results, MESSAGE_STATUS_OK));
+                }
 
                 break;
             }
@@ -148,6 +158,7 @@ int main() {
     };
 
     MusicLibrary lib;       // main shared music library
+    std::mutex libMutex;
 
     // load music library files
     for (const auto &filename : filenames) {
@@ -164,7 +175,7 @@ int main() {
     while (server.accept(client)) {
         // create API handler
         JsonMusicLibraryApi api(std::move(client));
-        std::thread thread(service, std::ref(lib), std::move(api), clientCount);
+        std::thread thread(service, std::ref(lib), std::ref(libMutex), std::move(api), clientCount);
         thread.detach();
         ++ clientCount;
     }
