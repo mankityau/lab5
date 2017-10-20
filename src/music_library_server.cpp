@@ -64,9 +64,17 @@ void service(MusicLibrary &lib, MusicLibraryApi &&api, int id) {
                 break;
             }
             case MessageType::REMOVE: {
-                //====================================================
-                // TODO: Implement "remove" functionality
-                //====================================================
+                RemoveMessage &remove = (RemoveMessage &) (*msg);
+                std::cout << "Client " << id << " removing song: " << remove.song << std::endl;
+
+                bool success = false;
+                success = lib.remove(remove.song);
+
+                if (success) {
+                    api.sendMessage(RemoveResponseMessage(remove, MESSAGE_STATUS_OK));
+                } else {
+                    api.sendMessage(RemoveResponseMessage(remove, MESSAGE_STATUS_ERROR, "Song cannot be remove from database"));
+                }
 
                 break;
             }
