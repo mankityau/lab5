@@ -67,10 +67,26 @@ void do_add(MusicLibraryApi &api) {
 
 // remove song from server
 void do_remove(MusicLibraryApi &api) {
+    std::string artist, title;
 
-    //=================================================
-    // TODO: Implement "remove" functionality
-    //=================================================
+    std::cout << std::endl << "Remove Song" << std::endl;
+    std::cout << "  Artist: ";
+    std::getline(std::cin, artist);
+    std::cout << "  Title: ";
+    std::getline(std::cin, title);
+
+    Song song(artist, title);
+    RemoveMessage msg(song);
+    if (api.sendMessage(msg)) {
+        std::unique_ptr<Message> msgr = api.recvMessage();
+        RemoveResponseMessage &resp = (RemoveResponseMessage &) (*msgr);
+
+        if (resp.status == MESSAGE_STATUS_OK) {
+            std::cout << std::endl << "   \"" << song << "\" removed successfull." << std::endl;
+        } else {
+            std::cout << std::endl << "   Adding \"" << song << "\" failed: " << resp.info << std::endl;
+        }
+    }
 
 }
 
