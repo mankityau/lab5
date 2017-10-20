@@ -18,23 +18,23 @@
  * the program.
  */
 class MusicLibraryApi {
- public:
+public:
 
-  /**
-   * Sends a message
-   * @param msg message to write
-   * @return true if successful, false if error
-   */
-  virtual bool sendMessage(const Message& msg) = 0;
+    /**
+     * Sends a message
+     * @param msg message to write
+     * @return true if successful, false if error
+     */
+    virtual bool sendMessage(const Message &msg) = 0;
 
-  /**
-   * Reads a message from the socket.  The returned message is
-   * contained within a smart pointer to preserve polymorphism
-   * and automatically handle freeing of memory resources.
-   *
-   * @return parsed message, nullptr if an error occurred
-   */
-  virtual std::unique_ptr<Message> recvMessage() = 0;
+    /**
+     * Reads a message from the socket.  The returned message is
+     * contained within a smart pointer to preserve polymorphism
+     * and automatically handle freeing of memory resources.
+     *
+     * @return parsed message, nullptr if an error occurred
+     */
+    virtual std::unique_ptr<Message> recvMessage() = 0;
 
 };
 
